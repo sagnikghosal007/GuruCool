@@ -1,0 +1,15 @@
+  ____                    ____            _
+ / ___|_   _ _ __ _   _ / ___|___   ___ | |
+| |  _| | | | '__| | | | |   / _ \ / _ \| |
+| |_| | |_| | |  | |_| | |__| (_) | (_) | |
+ \____|\__,_|_|   \__,_|\____\___/ \___/|_|
+
+  All-in-One Local Dev Server
+  Embedded Kafka  | H2 Database  | In-Memory Cache
+  Mock Payments   | Mock AI      | Stub Email
+
+  Swagger UI  -> http://localhost:8080/swagger-ui.html
+  H2 Console  -> http://localhost:8080/h2-console
+  Health      -> http://localhost:8080/actuator/health
+
+  Spring Boot ${spring-boot.version} | Java ${java.version}

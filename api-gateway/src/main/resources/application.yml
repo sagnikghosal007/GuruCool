@@ -1,0 +1,141 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: "optional:configserver:http://localhost:8888"
+  cloud:
+    config:
+      fail-fast: false
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenish-rate: 100
+                redis-rate-limiter.burst-capacity: 200
+                key-resolver: "#{@userKeyResolver}"
+        - id: mentor-service
+          uri: lb://mentor-service
+          predicates:
+            - Path=/api/mentors/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenish-rate: 100
+                redis-rate-limiter.burst-capacity: 200
+                key-resolver: "#{@userKeyResolver}"
+        - id: session-service
+          uri: lb://session-service
+          predicates:
+            - Path=/api/sessions/**
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/payments/**
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+        - id: ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/ai/**
+        - id: user-service-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/v3/api-docs
+          filters:
+            - RewritePath=/user-service/(?<segment>.*), /${segment}
+        - id: mentor-service-docs
+          uri: lb://mentor-service
+          predicates:
+            - Path=/mentor-service/v3/api-docs
+          filters:
+            - RewritePath=/mentor-service/(?<segment>.*), /${segment}
+        - id: session-service-docs
+          uri: lb://session-service
+          predicates:
+            - Path=/session-service/v3/api-docs
+          filters:
+            - RewritePath=/session-service/(?<segment>.*), /${segment}
+        - id: payment-service-docs
+          uri: lb://payment-service
+          predicates:
+            - Path=/payment-service/v3/api-docs
+          filters:
+            - RewritePath=/payment-service/(?<segment>.*), /${segment}
+        - id: ai-service-docs
+          uri: lb://ai-service
+          predicates:
+            - Path=/ai-service/v3/api-docs
+          filters:
+            - RewritePath=/ai-service/(?<segment>.*), /${segment}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:gurucool_redis_secret}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: ${JWT_SECRET:gurucool-super-secret-jwt-key-that-is-at-least-256-bits-long-for-hs256-algorithm-security}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: user-service
+        url: /user-service/v3/api-docs
+      - name: mentor-service
+        url: /mentor-service/v3/api-docs
+      - name: session-service
+        url: /session-service/v3/api-docs
+      - name: payment-service
+        url: /payment-service/v3/api-docs
+      - name: ai-service
+        url: /ai-service/v3/api-docs
+  api-docs:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [traceId=%X{traceId}] %-5level %logger{36} - %msg%n"
+  level:
+    com.gurucool: DEBUG
+    org.springframework.cloud.gateway: INFO

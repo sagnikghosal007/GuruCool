@@ -1,0 +1,171 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gurucool-all-in-one
+
+  profiles:
+    active: local
+
+  # Allow launcher @Primary beans to override common module beans
+  main:
+    allow-bean-definition-overriding: true
+
+  # H2 in-memory database — single DB shared across all services
+  datasource:
+    url: jdbc:h2:mem:gurucool;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;NON_KEYWORDS=VALUE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+        jdbc:
+          batch_size: 20
+
+  # Kafka bootstrap — overridden by EmbeddedKafkaConfig bean
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "com.gurucool.*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: "java.util.Map"
+
+  # Redis — minimal config (overridden by in-memory CacheManager)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+      connect-timeout: 1000ms
+      timeout: 1000ms
+      lettuce:
+        pool:
+          enabled: false
+
+  # Mail — stub in LocalInfraConfig
+  mail:
+    host: localhost
+    port: 25
+    username: noreply@gurucool.com
+    password: stub
+
+  # Thymeleaf for email templates
+  thymeleaf:
+    prefix: classpath:/templates/email/
+    suffix: .html
+    cache: false
+
+  # No cloud config server — use local yml
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration
+      - org.springframework.cloud.netflix.eureka.reactive.EurekaReactiveDiscoveryClientConfiguration
+
+# Disable Eureka registration
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+# JWT config
+jwt:
+  secret: gurucool-super-secret-jwt-key-that-is-at-least-256-bits-long-for-hs256-algorithm-security
+  access-token-expiry: 900000
+  refresh-token-expiry: 604800000
+
+# MinIO — stub in LocalInfraConfig
+minio:
+  endpoint: http://localhost:9000
+  access-key: stub
+  secret-key: stub123456
+  bucket:
+    profile-pictures: profile-pictures
+    mentor-documents: mentor-documents
+    session-recordings: session-recordings
+
+# Mock payment
+payment:
+  mock:
+    secret: gurucool-mock-payment-secret-key
+    success-rate: 95
+
+# AI — uses MockAiEngine when key is demo-key
+ai:
+  openai:
+    api-key: demo-key
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,h2-console
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: false
+
+# SpringDoc — aggregated swagger for all services
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  packages-to-scan:
+    - com.gurucool.userservice.controller
+    - com.gurucool.mentorservice.controller
+    - com.gurucool.sessionservice.controller
+    - com.gurucool.paymentservice.controller
+    - com.gurucool.notificationservice.controller
+    - com.gurucool.aiservice.controller
+    - com.gurucool.launcher.web
+
+logging:
+  level:
+    com.gurucool: INFO
+    org.springframework.kafka: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.apache.kafka: WARN
+    kafka: WARN
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{HH:mm:ss} [%-5level] [%thread] %logger{20} - %msg%n"

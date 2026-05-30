@@ -1,0 +1,9 @@
+# Local profile overrides — activated automatically by GuruCoolLauncherApplication
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+logging:
+  level:
+    com.gurucool: DEBUG

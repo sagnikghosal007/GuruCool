@@ -1,0 +1,12 @@
+# Project exclude paths
+/ai-service/target/
+/api-gateway/target/
+/app-launcher/target/
+/common/target/
+/config-server/target/
+/mentor-service/target/
+/notification-service/target/
+/payment-service/target/
+/service-registry/target/
+/session-service/target/
+/user-service/target/

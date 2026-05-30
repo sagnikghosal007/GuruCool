@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 40px; text-align: center; color: white; }
+        .body { padding: 40px; }
+        .badge { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 50px; padding: 12px 24px; display: inline-block; font-weight: bold; color: #92400e; margin: 20px 0; }
+        .footer { background: #f8f8f8; padding: 20px; text-align: center; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏆 Profile Verified!</h1>
+    </div>
+    <div class="body">
+        <h2>Congratulations, <span th:text="${mentorName}">Mentor</span>!</h2>
+        <p>Your GuruCool mentor profile has been successfully verified.</p>
+        <center>
+            <div class="badge">
+                ✅ <span th:text="${status}">INNER_CIRCLE</span> Mentor
+            </div>
+        </center>
+        <p>You can now:</p>
+        <ul>
+            <li>🎯 Appear in verified mentor searches</li>
+            <li>💰 Accept paid session bookings</li>
+            <li>📊 Access your mentor analytics dashboard</li>
+            <li>🌟 Display your verification badge on your profile</li>
+        </ul>
+    </div>
+    <div class="footer">
+        <p>© 2025 GuruCool. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 40px; text-align: center; color: white; }
+        .body { padding: 40px; }
+        .receipt-box { background: #f9fafb; border-radius: 8px; padding: 24px; margin: 20px 0; }
+        .receipt-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .footer { background: #f8f8f8; padding: 20px; text-align: center; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>💳 Payment Receipt</h1>
+    </div>
+    <div class="body">
+        <p>Thank you for your payment! Here's your receipt:</p>
+        <div class="receipt-box">
+            <div class="receipt-row">
+                <span><strong>Booking ID</strong></span>
+                <span th:text="${bookingId}">N/A</span>
+            </div>
+            <div class="receipt-row">
+                <span><strong>Amount</strong></span>
+                <span>₹<span th:text="${amount}">0</span></span>
+            </div>
+            <div class="receipt-row">
+                <span><strong>Status</strong></span>
+                <span style="color: #10b981; font-weight: bold;">PAID ✓</span>
+            </div>
+        </div>
+        <p>Please keep this receipt for your records. Your session is now confirmed.</p>
+    </div>
+    <div class="footer">
+        <p>© 2025 GuruCool. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

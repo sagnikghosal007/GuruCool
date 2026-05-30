@@ -1,0 +1,240 @@
+version: '3.8'
+
+services:
+  # ─── PostgreSQL Databases ───────────────────────────────────────────
+  postgres-users:
+    image: postgres:16-alpine
+    container_name: gurucool-postgres-users
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: gurucool
+      POSTGRES_PASSWORD: gurucool_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+      - ./user-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gurucool -d users_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gurucool-network
+
+  postgres-mentors:
+    image: postgres:16-alpine
+    container_name: gurucool-postgres-mentors
+    environment:
+      POSTGRES_DB: mentors_db
+      POSTGRES_USER: gurucool
+      POSTGRES_PASSWORD: gurucool_secret
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_mentors_data:/var/lib/postgresql/data
+      - ./mentor-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gurucool -d mentors_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gurucool-network
+
+  postgres-sessions:
+    image: postgres:16-alpine
+    container_name: gurucool-postgres-sessions
+    environment:
+      POSTGRES_DB: sessions_db
+      POSTGRES_USER: gurucool
+      POSTGRES_PASSWORD: gurucool_secret
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_sessions_data:/var/lib/postgresql/data
+      - ./session-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gurucool -d sessions_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gurucool-network
+
+  postgres-payments:
+    image: postgres:16-alpine
+    container_name: gurucool-postgres-payments
+    environment:
+      POSTGRES_DB: payments_db
+      POSTGRES_USER: gurucool
+      POSTGRES_PASSWORD: gurucool_secret
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_payments_data:/var/lib/postgresql/data
+      - ./payment-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gurucool -d payments_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gurucool-network
+
+  # ─── Redis ──────────────────────────────────────────────────────────
+  redis:
+    image: redis:7.2-alpine
+    container_name: gurucool-redis
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --requirepass gurucool_redis_secret
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "gurucool_redis_secret", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gurucool-network
+
+  # ─── Zookeeper ──────────────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: gurucool-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 | grep imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gurucool-network
+
+  # ─── Kafka ──────────────────────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: gurucool-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - gurucool-network
+
+  # ─── Zipkin ─────────────────────────────────────────────────────────
+  zipkin:
+    image: openzipkin/zipkin:3
+    container_name: gurucool-zipkin
+    ports:
+      - "9411:9411"
+    environment:
+      - STORAGE_TYPE=mem
+    networks:
+      - gurucool-network
+
+  # ─── MinIO ──────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: gurucool-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: gurucool_minio
+      MINIO_ROOT_PASSWORD: gurucool_minio_secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gurucool-network
+
+  # ─── MinIO Init (creates buckets) ───────────────────────────────────
+  minio-init:
+    image: minio/mc:latest
+    container_name: gurucool-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set gurucool http://minio:9000 gurucool_minio gurucool_minio_secret;
+      /usr/bin/mc mb --ignore-existing gurucool/profile-pictures;
+      /usr/bin/mc mb --ignore-existing gurucool/mentor-documents;
+      /usr/bin/mc mb --ignore-existing gurucool/session-recordings;
+      /usr/bin/mc policy set download gurucool/profile-pictures;
+      echo 'Buckets created successfully';
+      exit 0;
+      "
+    networks:
+      - gurucool-network
+
+  # ─── Kafka UI (dev convenience) ─────────────────────────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: gurucool-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: gurucool-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - gurucool-network
+
+volumes:
+  postgres_users_data:
+  postgres_mentors_data:
+  postgres_sessions_data:
+  postgres_payments_data:
+  redis_data:
+  zookeeper_data:
+  zookeeper_log:
+  kafka_data:
+  minio_data:
+
+networks:
+  gurucool-network:
+    driver: bridge
+    name: gurucool-network

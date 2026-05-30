@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #ef4444, #dc2626); padding: 40px; text-align: center; color: white; }
+        .body { padding: 40px; }
+        .info-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 20px; border-radius: 4px; margin: 20px 0; }
+        .footer { background: #f8f8f8; padding: 20px; text-align: center; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Session Cancelled</h1>
+    </div>
+    <div class="body">
+        <p>We're sorry to inform you that the following session has been cancelled:</p>
+        <div class="info-box">
+            <p><strong>Session:</strong> <span th:text="${sessionTitle}">Session Title</span></p>
+            <p><strong>Reason:</strong> <span th:text="${cancellationReason}">Reason</span></p>
+        </div>
+        <p>If you made a payment, a refund will be processed within 5-7 business days.</p>
+        <p>We apologize for the inconvenience. Please browse other available sessions on GuruCool.</p>
+    </div>
+    <div class="footer">
+        <p>© 2025 GuruCool. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

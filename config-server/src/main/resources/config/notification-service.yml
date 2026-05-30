@@ -1,0 +1,25 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: notification-service
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:noreply@gurucool.com}
+    password: ${MAIL_PASSWORD:mail_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  thymeleaf:
+    prefix: classpath:/templates/email/
+    suffix: .html
+    cache: false
+
+firebase:
+  credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+  enabled: ${FIREBASE_ENABLED:false}

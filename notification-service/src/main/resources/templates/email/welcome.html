@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 40px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .body { padding: 40px; }
+        .footer { background: #f8f8f8; padding: 20px; text-align: center; color: #666; font-size: 12px; }
+        .btn { display: inline-block; background: #6366f1; color: white; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Welcome to GuruCool! 🎓</h1>
+        <p>Where Mentorship Meets Opportunity</p>
+    </div>
+    <div class="body">
+        <h2>Hello, <span th:text="${userName}">User</span>!</h2>
+        <p>We're thrilled to have you join <strong>GuruCool</strong> — the premier platform connecting students with industry mentors.</p>
+        <p>Your account has been created as a <strong th:text="${role}">STUDENT</strong>.</p>
+        <ul>
+            <li>🔍 Discover top mentors from leading companies</li>
+            <li>📅 Book 1:1 or group sessions</li>
+            <li>🤖 Get AI-powered mentor recommendations</li>
+            <li>💼 Build your career roadmap</li>
+        </ul>
+        <p>Please verify your email to start your journey!</p>
+        <center><a href="#" class="btn">Get Started →</a></center>
+    </div>
+    <div class="footer">
+        <p>© 2025 GuruCool. All rights reserved.</p>
+        <p>You received this email because you registered at gurucool.com</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: session-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_SESSIONS_HOST:localhost}:${POSTGRES_SESSIONS_PORT:5434}/sessions_db
+    username: ${POSTGRES_SESSIONS_USER:gurucool}
+    password: ${POSTGRES_SESSIONS_PASSWORD:gurucool_secret}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  cache:
+    type: redis
+    redis:
+      time-to-live: 120000
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:gurucool_minio}
+  secret-key: ${MINIO_SECRET_KEY:gurucool_minio_secret}
+  bucket:
+    session-recordings: session-recordings

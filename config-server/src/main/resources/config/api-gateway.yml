@@ -1,0 +1,90 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenish-rate: 100
+                redis-rate-limiter.burst-capacity: 200
+                key-resolver: "#{@userKeyResolver}"
+        - id: mentor-service
+          uri: lb://mentor-service
+          predicates:
+            - Path=/api/mentors/**
+        - id: session-service
+          uri: lb://session-service
+          predicates:
+            - Path=/api/sessions/**
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/payments/**
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+        - id: ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/ai/**
+        - id: user-service-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/v3/api-docs
+          filters:
+            - RewritePath=/user-service/(?<segment>.*), /${segment}
+        - id: mentor-service-docs
+          uri: lb://mentor-service
+          predicates:
+            - Path=/mentor-service/v3/api-docs
+          filters:
+            - RewritePath=/mentor-service/(?<segment>.*), /${segment}
+        - id: session-service-docs
+          uri: lb://session-service
+          predicates:
+            - Path=/session-service/v3/api-docs
+          filters:
+            - RewritePath=/session-service/(?<segment>.*), /${segment}
+        - id: payment-service-docs
+          uri: lb://payment-service
+          predicates:
+            - Path=/payment-service/v3/api-docs
+          filters:
+            - RewritePath=/payment-service/(?<segment>.*), /${segment}
+        - id: ai-service-docs
+          uri: lb://ai-service
+          predicates:
+            - Path=/ai-service/v3/api-docs
+          filters:
+            - RewritePath=/ai-service/(?<segment>.*), /${segment}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: user-service
+        url: /user-service/v3/api-docs
+      - name: mentor-service
+        url: /mentor-service/v3/api-docs
+      - name: session-service
+        url: /session-service/v3/api-docs
+      - name: payment-service
+        url: /payment-service/v3/api-docs
+      - name: ai-service
+        url: /ai-service/v3/api-docs
+  api-docs:
+    enabled: true
